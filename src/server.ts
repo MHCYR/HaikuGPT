@@ -4,6 +4,7 @@ import cors from "cors";
 import stravaRoutes from "./events/strava";
 import { addDoc, collection } from "firebase/firestore";
 import db from "./firebase";
+import twitterRoutes from "./api/twitter";
 
 const app: Express = express();
 app.use(morgan("dev")); // logs requests to the console
@@ -28,4 +29,5 @@ app.get("/", async (_req, res) => {
 });
 
 app.use("/api", stravaRoutes);
+app.use("/twitter", twitterRoutes);
 export default app;
