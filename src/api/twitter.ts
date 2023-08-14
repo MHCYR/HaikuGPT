@@ -2,6 +2,9 @@ import { Router } from "express";
 import { TwitterApi } from "twitter-api-v2";
 import { setDoc, doc, getDoc } from "firebase/firestore";
 import db from "../firebase";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const twitterRoutes = Router();
 
