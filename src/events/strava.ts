@@ -17,7 +17,7 @@ stravaRoutes.get("/strava", (req, res) => {
 stravaRoutes.get("/auth", (req, res) => {
   const clientId = 111760;
   const redirectUri =
-    "https://mauditsgpt-production.up.railway.app/twitter/callback";
+    "https://mauditsgpt-production.up.railway.app/api/callback";
   res.redirect(
     `https://www.strava.com/oauth/authorize?clien_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&approval_prompt=force&scope=activity:read_all`,
   );
