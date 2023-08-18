@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { setDoc, doc } from "firebase/firestore";
+import { setDoc, doc, getDoc } from "firebase/firestore";
 import db from "../firebase";
 import dotenv from "dotenv";
 
@@ -19,7 +19,7 @@ stravaRoutes.get("/auth", (_req, res) => {
   const redirectUri =
     "https://mauditsgpt-production.up.railway.app/api/callback";
   res.redirect(
-    `https://www.strava.com/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&approval_prompt=force&scope=activity:read_all`,
+    `https://www.strava.com/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&approval_prompt=force&scope=read_all`,
   );
 });
 
@@ -52,5 +52,21 @@ stravaRoutes.post("/strava", (req, res) => {
   console.log(req.body);
   res.sendStatus(200);
 });
+
+// stravaRoutes.get("/get_activities", async (_req, res) => {
+//   const docRef = doc(db, "tokens", "strava");
+//   const docSnap = getDoc(docRef);
+
+//   if (!docSnap.exists()) {
+//     return res.status(401).send("No tokens stored");
+//   }
+//   try {
+//     const { access_token } = docSnap.data();
+//     const response = await axios.get(
+//       `https://www.strava.com/api/v3/athlete/activities?access_token=${access_token}`,
+//     );
+//     res.send(response.data);
+//   }
+// });
 
 export default stravaRoutes;
