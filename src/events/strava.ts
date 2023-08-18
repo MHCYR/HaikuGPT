@@ -19,7 +19,7 @@ stravaRoutes.get("/auth", (req, res) => {
   const redirectUri =
     "https://mauditsgpt-production.up.railway.app/twitter/callback";
   res.redirect(
-    `https://www.strava.com/oauth/mobile/authorize?clien_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&approval_prompt=force&scope=activity:read_all`,
+    `https://www.strava.com/oauth/authorize?clien_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&approval_prompt=force&scope=activity:read_all`,
   );
 });
 
