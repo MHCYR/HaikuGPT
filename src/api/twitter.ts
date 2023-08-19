@@ -98,7 +98,7 @@ twitterRoutes.get("/tweet", async (_req, res) => {
   try {
     const response = await axios.get(
       "https://www.strava.com/api/v3/athlete/activities",
-      { Headers: { Authorization: `Bearer ${access_token}` } },
+      { headers: { Authorization: `Bearer ${access_token}` } },
     );
 
     const lastActivity: StravaActivity = response.data[0];
@@ -125,6 +125,50 @@ twitterRoutes.get("/tweet", async (_req, res) => {
   } catch (e) {
     console.error(e);
     res.status(401).send("Error getting activities");
+  }
+});
+
+twitterRoutes.get("/get_activities", async (_req, res) => {
+  const docRef = doc(db, "tokens", "strava");
+  const docSnap = await getDoc(docRef);
+
+  if (!docSnap.exists()) {
+    return res.status(401).send("No tokens stored");
+  }
+
+  // @ts-ignore
+  const { access_token } = docSnap.data();
+  console.log(access_token);
+
+  try {
+    const response = await axios.get(
+      "https://www.strava.com/api/v3/athlete/activities",
+      { headers: { Authorization: `Bearer ${access_token}` } },
+    );
+
+    const lastActivity: StravaActivity = response.data[0];
+
+    const openaiParams: OpenAI.Chat.CompletionCreateParamsNonStreaming = {
+      model: "gpt-3.5-turbo",
+      temperature: 0.9,
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a haiku writer who takes inspiration to write haikus from a recorded strava activity",
+        },
+        { role: "user", content: JSON.stringify(lastActivity) },
+      ],
+    };
+
+    const completion: OpenAI.Chat.ChatCompletion =
+      await openai.chat.completions.create(openaiParams);
+
+    const haiku = completion.choices[0].message.content;
+
+    res.send(haiku);
+  } catch (e) {
+    console.error(e);
   }
 });
 
