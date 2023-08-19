@@ -98,7 +98,6 @@ twitterRoutes.get("/tweet", async (_req, res) => {
   try {
     const response = await axios.get(
       "https://www.strava.com/api/v3/athlete/activities",
-      {},
       { Headers: { Authorization: `Bearer ${access_token}` } },
     );
 
