@@ -1,8 +1,20 @@
 import { Router } from "express";
 import { TwitterApi } from "twitter-api-v2";
+import OpenAI from "openai";
 import { setDoc, doc, getDoc } from "firebase/firestore";
 import db from "../firebase";
 import dotenv from "dotenv";
+import openai from "../openai";
+const axios = require("axios").default;
+
+interface StravaActivity {
+  name: string;
+  sport_type: string;
+  max_heartrate: number;
+  average_heartrate: number;
+  elev_high: number;
+  location_city: string;
+}
 
 dotenv.config();
 
@@ -61,11 +73,13 @@ twitterRoutes.get("/callback", async (req, res) => {
 });
 
 twitterRoutes.get("/tweet", async (_req, res) => {
-  const docRef = doc(db, "tokens", "twitter");
-  const docSnap = await getDoc(docRef);
+  const twitterDocRef = doc(db, "tokens", "twitter");
+  const twitterDocSnap = await getDoc(twitterDocRef);
+  const stravaDocRef = doc(db, "tokens", "strava");
+  const stravaDocSnap = await getDoc(stravaDocRef);
 
   // @ts-ignore
-  const { refreshToken } = docSnap.data();
+  const { refreshToken } = twitterDocSnap.data();
 
   const {
     client: refreshedClient,
@@ -78,9 +92,41 @@ twitterRoutes.get("/tweet", async (_req, res) => {
     refreshToken: newRefreshToken,
   });
 
-  const { data } = await refreshedClient.v2.tweet("Hello world!");
+  // @ts-ignore
+  const { access_token } = stravaDocSnap.data();
 
-  res.send(data);
+  try {
+    const response = await axios.get(
+      "https://www.strava.com/api/v3/athlete/activities",
+      {},
+      { Headers: { Authorization: `Bearer ${access_token}` } },
+    );
+
+    const lastActivity: StravaActivity = response.data[0];
+
+    const openaiParams: OpenAI.Chat.CompletionCreateParamsNonStreaming = {
+      model: "gpt-3.5-turbo",
+      temperature: 0.9,
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a haiku writer who takes inspiration to write haikus from a recorded strava activity",
+        },
+        { role: "user", content: JSON.stringify(lastActivity) },
+      ],
+    };
+
+    const completion: OpenAI.Chat.ChatCompletion =
+      await openai.chat.completions.create(openaiParams);
+
+    const haiku = completion.choices[0].message.content;
+    const { data } = await refreshedClient.v2.tweet(`${haiku}`);
+    res.send(data);
+  } catch (e) {
+    console.error(e);
+    res.status(401).send("Error getting activities");
+  }
 });
 
 export default twitterRoutes;

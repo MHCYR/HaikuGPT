@@ -37,12 +37,11 @@ stravaRoutes.get("/callback", async (req, res) => {
     const response = await axios.post(
       `https://www.strava.com/oauth/token?client_id=${queryParams.client_id}&client_secret=${queryParams.client_secret}&code=${code}&grant_type=${queryParams.grant_type}`,
     );
-    console.log(response);
     const { access_token, refresh_token } = response.data;
     await setDoc(docRef, { access_token, refresh_token });
     res.send("success");
   } catch (e) {
-    console.log(e);
+    console.error(e);
     res.status(401).send("Error on token exchange");
   }
   res.send("success");

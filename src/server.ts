@@ -2,8 +2,6 @@ import express, { Express } from "express";
 import morgan from "morgan";
 import cors from "cors";
 import stravaRoutes from "./events/strava";
-import { addDoc, collection } from "firebase/firestore";
-import db from "./firebase";
 import twitterRoutes from "./api/twitter";
 
 const app: Express = express();
@@ -13,19 +11,7 @@ app.use(express.urlencoded({ extended: true })); // creates an object from the r
 app.use(cors()); // allows requests from other origins
 
 app.get("/", async (_req, res) => {
-  try {
-    const docRef = await addDoc(collection(db, "users"), {
-      first: "Alan",
-      middle: "Mathison",
-      last: "Turing",
-      born: 1912,
-    });
-    console.log("Document written with ID: ", docRef.id);
-    res.send("success");
-  } catch (e) {
-    console.error("Error adding document: ", e);
-    res.send("error");
-  }
+  res.send("HaikuGPT API");
 });
 
 app.use("/api", stravaRoutes);
